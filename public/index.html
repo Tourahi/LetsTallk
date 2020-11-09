@@ -2,11 +2,26 @@
 <html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8">
-    <title>Chatting</title>
+    <title>LetsTalk</title>
+    <link rel="icon" href="/img/favicon.png">
+    <link rel="stylesheet" href="/css/styles.css">
   </head>
   <body>
-    <h1>Hello</h1>
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="/js/chat.js"></script>
+    <div class="centered-form">
+      <div class="centered-form__box">
+        <h1>Join a Room</h1>
+        <form action="/chat.html">
+          <div class="labelDiv">
+            <label class="label">Display name</label>
+          </div>
+          <input type="text" name="username" placeholder="Display name" required>
+          <div class="labelDiv">
+            <label class="label">Room</label>
+          </div>
+          <input type="text" name="room" placeholder="Room" required>
+          <button>Join</button>
+        </form>
+      </div>
+    </div>
   </body>
 </html>

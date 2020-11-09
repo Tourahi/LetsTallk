@@ -8,6 +8,9 @@ const server = http.createServer(app);
 const io = socketio(server);
 
 const publicDirPath = path.join(__dirname, '../public');
+const {
+  generateMsg
+} = require('./utils/messages.js');
 
 
 //Serving the static dir
@@ -25,6 +28,17 @@ app.get('',(req , res) => {
 //io
 io.on('connection', (socket) => {
   console.log('a user connected');
+  socket.emit('message',generateMsg("Welcome!"));
+  socket.broadcast.emit('message' , generateMsg('A new user has joined.'));
+
+  socket.on('fromMe',(msg) => {
+    console.log(msg);
+    socket.emit('message',generateMsg(msg));
+  });
+
+  socket.on('disconnect', () => {
+    io.emit('message' ,generateMsg('A user has left!'));
+  });
 });
 
 
