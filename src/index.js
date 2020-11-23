@@ -12,6 +12,10 @@ const {
   generateMsg
 } = require('./utils/messages.js');
 
+const { addUser,
+        removeUser,
+        getUser,
+        getUsersInRoom } = require('./utils/users.js');
 
 //Serving the static dir
 app.use(express.static(publicDirPath));
@@ -29,15 +33,30 @@ app.get('',(req , res) => {
 io.on('connection', (socket) => {
   console.log('a user connected');
   socket.emit('message',generateMsg("Welcome!"));
-  socket.broadcast.emit('message' , generateMsg('A new user has joined.'));
 
-  socket.on('fromMe',(msg) => {
+  //join for every Room
+  socket.on('join',({username , room}, ack) => {
+      const {error , user} = addUser({id : socket.id , username, room});
+      // Error reporting
+      if(error) {
+        return ack(error);
+      }
+      socket.join(user.room);
+      socket.broadcast.to(user.room).emit('message' , generateMsg(`${user.username} has joined.`));
+      ack();
+  });
+
+  socket.on('sendMessage',(msg,ack) => {
     console.log(msg);
     socket.emit('message',generateMsg(msg));
+    ack();
   });
 
   socket.on('disconnect', () => {
-    io.emit('message' ,generateMsg('A user has left!'));
+    const user = removeUser(socket.id);
+    if(user) {
+        io.to(user.room).emit('message' ,generateMsg(`${user.username} has left!`));
+    }
   });
 });
 
