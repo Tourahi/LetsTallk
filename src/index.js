@@ -32,7 +32,7 @@ app.get('',(req , res) => {
 //io
 io.on('connection', (socket) => {
   console.log('a user connected');
-  socket.emit('message',generateMsg("Welcome!"));
+  socket.emit('message',generateMsg("Welcome!","ChatBot"));
 
   //join for every Room
   socket.on('join',({username , room}, ack) => {
@@ -42,20 +42,32 @@ io.on('connection', (socket) => {
         return ack(error);
       }
       socket.join(user.room);
-      socket.broadcast.to(user.room).emit('message' , generateMsg(`${user.username} has joined.`));
+      socket.broadcast.to(user.room).emit('message' , generateMsg(`${user.username} has joined.`,"ChatBot"));
+
+      //Send Room data
+      io.to(user.room).emit('roomData' , {
+        room : user.room,
+        users : getUsersInRoom(user.room)
+      })
       ack();
   });
 
   socket.on('sendMessage',(msg,ack) => {
     console.log(msg);
-    socket.emit('message',generateMsg(msg));
+    const user = getUser(socket.id);
+    io.to(user.room).emit('message',generateMsg(msg,user.username));
     ack();
   });
 
   socket.on('disconnect', () => {
     const user = removeUser(socket.id);
     if(user) {
-        io.to(user.room).emit('message' ,generateMsg(`${user.username} has left!`));
+      //Send Room data
+      io.to(user.room).emit('roomData' , {
+        room : user.room,
+        users : getUsersInRoom(user.room)
+      })
+      io.to(user.room).emit('message' ,generateMsg(`${user.username} has left!`));
     }
   });
 });
